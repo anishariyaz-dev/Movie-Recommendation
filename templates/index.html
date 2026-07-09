@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flixora // The Perfect Movie Vibe Picker</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fbbf24'><path d='M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@800&family=Poppins:wght@400;500;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-midnight: #0f111a; --card-slate: #161925; --accent-amber: #fbbf24; }
+        body { font-family: 'Quicksand', sans-serif; background-color: var(--bg-midnight); color: #e2e8f0; overflow-x: hidden; }
+        .logo-font { font-family: 'Bricolage Grotesque', sans-serif; }
+        .poppins { font-family: 'Poppins', sans-serif; }
+        
+        /* Splash Screen Animation */
+        #splash {
+            position: fixed; inset: 0; z-index: 100; background: var(--bg-midnight);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        .splash-logo {
+            font-size: 5rem; color: var(--accent-amber);
+            animation: logo-reveal 2.5s ease-in-out forwards;
+            letter-spacing: -0.05em;
+        }
+        @keyframes logo-reveal {
+            0% { opacity: 0; transform: scale(0.8); letter-spacing: 0.5em; filter: blur(10px); }
+            50% { opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1); letter-spacing: -0.05em; }
+        }
+
+        .glass-card { background: var(--card-slate); border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-btn { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .hero-container { display: flex; flex-direction: column; overflow: hidden; }
+        @media (min-width: 768px) { .hero-container { flex-direction: row; height: 580px; } }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-amber); border-radius: 10px; }
+        .saved-drawer { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+        .movie-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .movie-card:hover { transform: translateY(-10px) scale(1.02); }
+    </style>
+</head>
+<body>
+
+    <!-- INTRO SPLASH SCREEN -->
+    <div id="splash">
+        <h1 class="logo-font splash-logo">Flixora</h1>
+        <p class="poppins text-slate-500 tracking-[0.5em] uppercase text-[10px] mt-4 opacity-0 animate-[fadeIn_1s_ease_1.5s_forwards]">The Perfect Vibe Picker</p>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="fixed top-0 w-full z-[60] bg-[#0f111a]/90 backdrop-blur-xl border-b border-white/5 px-8 py-4 flex justify-between items-center">
+        <div class="w-1/3"></div>
+        <div class="w-1/3 text-center">
+            <h1 class="text-4xl logo-font tracking-tight text-amber-400 cursor-pointer" onclick="goHome()">Flixora</h1>
+            <p class="poppins text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500 -mt-1">the perfect movie vibe picker</p>
+        </div>
+        <div class="w-1/3 flex justify-end">
+            <button onclick="toggleWatchlist()" class="glass-btn px-5 py-2 rounded-full transition-all text-amber-400 font-bold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <span class="text-xs uppercase tracking-widest">Saved (<span id="count">0</span>)</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- SEARCH AREA -->
+    <header class="pt-44 pb-16 px-4 flex justify-center items-center gap-4">
+        <!-- GLASS HOME ICON -->
+        <button onclick="goHome()" class="glass-btn p-5 rounded-full text-amber-400 hover:bg-white/10 transition-all shadow-xl group" title="Home">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+        </button>
+        
+        <div class="max-w-xl w-full relative">
+            <input type="text" id="movieSearch" autocomplete="off" placeholder="Search for a movie vibe..." 
+                class="w-full bg-slate-900 border border-white/10 rounded-full py-6 px-10 text-lg shadow-2xl outline-none focus:ring-2 focus:ring-amber-500/50 transition-all text-slate-200">
+            <div id="autocomplete" class="absolute w-full mt-3 bg-slate-800 rounded-3xl overflow-hidden hidden z-50 text-left shadow-2xl border border-white/5"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-6">
+        <section id="popularSection" class="mb-20">
+            <div class="flex items-center gap-4 mb-10"><h3 class="text-sm font-bold uppercase tracking-[0.3em] text-amber-500/60">Trending Now</h3><div class="h-px flex-grow bg-white/5"></div></div>
+            <div id="popularGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8"></div>
+        </section>
+
+        <section id="hero" class="hidden mb-20">
+            <div class="glass-card hero-container">
+                <div class="md:w-1/3 flex-shrink-0"><img id="heroPoster" class="w-full h-full object-cover" src="" alt=""></div>
+                <div class="md:w-2/3 p-8 md:p-12 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4"><span id="heroYear" class="bg-amber-500/10 text-amber-500 px-4 py-1 rounded-full text-xs font-bold"></span><span id="heroRating" class="bg-emerald-500/10 text-emerald-500 px-4 py-1 rounded-full text-xs font-bold"></span></div>
+                    <h2 id="heroTitle" class="text-4xl md:text-6xl font-bold mb-6 text-white leading-tight"></h2>
+                    <div class="flex-grow overflow-y-auto custom-scrollbar pr-4 mb-8"><p id="heroOverview" class="text-slate-400 text-lg leading-relaxed"></p></div>
+                    <div class="mb-8"><h4 class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/50 mb-3">Starring</h4><p id="castList" class="text-sm text-slate-300 font-medium leading-relaxed"></p></div>
+                    <button id="addListBtn" class="bg-amber-500 text-black px-10 py-4 rounded-2xl font-bold hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 w-fit">+ Add to Watchlist</button>
+                </div>
+            </div>
+            <div class="mt-24">
+                <div class="max-w-4xl mb-12"><h3 class="text-2xl font-bold text-white mb-3">Curated Recommendations</h3><p id="recSentence" class="poppins text-sm text-slate-500 leading-relaxed italic"></p></div>
+                <div id="recGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- WATCHLIST DRAWER -->
+    <div id="watchlistDrawer" class="fixed inset-y-0 right-0 w-full md:w-96 bg-[#161925] z-[100] translate-x-full saved-drawer border-l border-white/5 p-8 shadow-2xl">
+        <div class="flex justify-between items-center mb-10"><h3 class="text-2xl font-bold text-white">Watchlist</h3><button onclick="toggleWatchlist()" class="text-slate-500 hover:text-amber-400"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+        <div id="watchlistItems" class="space-y-6 overflow-y-auto max-h-[calc(100vh-200px)] pr-2 custom-scrollbar"></div>
+    </div>
+
+    <script>
+        const movieCache = new Map();
+        let watchlist = JSON.parse(localStorage.getItem('flixora_list')) || [];
+        let currentResults = [];
+
+        // Splash Screen Logic
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash');
+                splash.style.opacity = '0';
+                setTimeout(() => splash.style.visibility = 'hidden', 800);
+            }, 3000);
+        });
+
+        const searchInput = document.getElementById('movieSearch');
+        const autocomplete = document.getElementById('autocomplete');
+        const getImg = (path) => `https://image.tmdb.org/t/p/w500${path}`;
+
+        function goHome() {
+            document.getElementById('hero').classList.add('hidden');
+            document.getElementById('popularSection').classList.remove('hidden');
+            searchInput.value = "";
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function toggleWatchlist() { document.getElementById('watchlistDrawer').classList.toggle('translate-x-full'); }
+
+        function updateWatchlistUI() {
+            document.getElementById('count').innerText = watchlist.length;
+            localStorage.setItem('flixora_list', JSON.stringify(watchlist));
+            const container = document.getElementById('watchlistItems');
+            if (watchlist.length === 0) { container.innerHTML = `<p class="text-slate-500 text-center py-10">Empty list.</p>`; return; }
+            container.innerHTML = watchlist.map(m => `
+                <div class="flex gap-4 items-center bg-white/5 p-3 rounded-2xl">
+                    <img src="${getImg(m.poster_path)}" class="w-12 h-16 rounded-xl object-cover">
+                    <div class="flex-grow min-w-0"><div class="font-bold text-sm text-white truncate">${m.title}</div><button onclick="removeFromSaved(${m.id})" class="text-[10px] text-amber-500 font-bold uppercase">Remove</button></div>
+                    <button onclick="selectMovie(${m.id})" class="p-2 bg-white/5 rounded-full text-amber-500"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+                </div>`).join('');
+        }
+
+        async function loadPopular() {
+            const res = await fetch('/popular');
+            const movies = await res.json();
+            document.getElementById('popularGrid').innerHTML = movies.map(m => {
+                movieCache.set(m.id, m);
+                return `<div onclick="selectMovie(${m.id})" class="movie-card group"><div class="relative overflow-hidden rounded-[2rem] shadow-2xl border border-white/5"><img src="${getImg(m.poster_path)}" class="w-full aspect-[2/3] object-cover group-hover:scale-110 transition-transform duration-700"></div><h4 class="mt-4 font-bold text-sm text-white truncate px-2">${m.title}</h4><p class="text-[10px] text-slate-500 px-2 uppercase tracking-widest">${m.release_date?.split('-')[0] || 'N/A'}</p></div>`;
+            }).join('');
+        }
+
+        searchInput.addEventListener('input', async () => {
+            const q = searchInput.value.trim();
+            if (q.length < 2) { autocomplete.classList.add('hidden'); return; }
+            const res = await fetch(`/search?query=${encodeURIComponent(q)}`);
+            currentResults = await res.json();
+            if (currentResults.length > 0) {
+                currentResults.forEach(m => movieCache.set(m.id, m));
+                autocomplete.innerHTML = currentResults.slice(0, 6).map(m => `<div onclick="selectMovie(${m.id})" class="p-4 hover:bg-white/5 cursor-pointer flex gap-4 border-b border-white/5 items-center transition-colors"><img src="${getImg(m.poster_path)}" class="w-10 h-14 rounded-lg object-cover"><div><div class="font-bold text-sm text-white">${m.title}</div><div class="text-xs text-slate-500">${m.release_date?.split('-')[0] || 'N/A'}</div></div></div>`).join('');
+                autocomplete.classList.remove('hidden');
+            }
+        });
+
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && currentResults.length > 0) selectMovie(currentResults[0].id); });
+
+        async function selectMovie(id) {
+            const movie = movieCache.get(id);
+            if (!movie) return;
+            autocomplete.classList.add('hidden');
+            document.getElementById('popularSection').classList.add('hidden');
+            document.getElementById('hero').classList.remove('hidden');
+            document.getElementById('heroTitle').innerText = movie.title;
+            document.getElementById('heroPoster').src = getImg(movie.poster_path);
+            document.getElementById('heroYear').innerText = movie.release_date?.split('-')[0] || 'N/A';
+            document.getElementById('heroRating').innerText = `★ ${movie.vote_average || '0.0'}`;
+            document.getElementById('heroOverview').innerText = movie.overview || "No description available.";
+            document.getElementById('addListBtn').onclick = () => addToSaved(id);
+            const castRes = await fetch(`/movie/${id}/credits`);
+            document.getElementById('castList').innerText = (await castRes.json()).join(', ');
+            const recRes = await fetch(`/recommendations/${id}`);
+            const recs = await recRes.json();
+            recs.forEach(m => movieCache.set(m.id, m));
+            document.getElementById('recSentence').innerText = `If you like "${movie.title}", you might also enjoy "${recs.slice(0, 3).map(m => m.title).join(', ')}" and these other language-matched picks...`;
+            document.getElementById('recGrid').innerHTML = recs.map(m => `<div class="movie-card group" onclick="selectMovie(${m.id})"><div class="relative overflow-hidden rounded-[2rem] shadow-2xl border border-white/5"><img src="${getImg(m.poster_path)}" class="w-full aspect-[2/3] object-cover group-hover:scale-110 transition-transform duration-700"></div><h4 class="mt-4 font-bold text-sm text-white truncate px-2">${m.title}</h4><p class="text-[10px] text-slate-500 px-2 uppercase tracking-widest">${m.release_date?.split('-')[0] || 'N/A'}</p></div>`).join('');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function addToSaved(id) { const movie = movieCache.get(id); if (!watchlist.find(m => m.id === id)) { watchlist.push(movie); updateWatchlistUI(); } }
+        function removeFromSaved(id) { watchlist = watchlist.filter(m => m.id !== id); updateWatchlistUI(); }
+        document.addEventListener('click', (e) => { if (!searchInput.contains(e.target)) autocomplete.classList.add('hidden'); });
+        loadPopular(); updateWatchlistUI();
+    </script>
+</body>
+</html>
