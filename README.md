@@ -22,7 +22,7 @@ Client-Side Caching: Uses high-performance Vanilla JavaScript (ES6) backed by a 
 Smart Recommendation Engine: Extracts the original language profile of a selected movie, blends official TMDB recommendations with trending global discovery data from that same language, filters duplicates, and returns twenty highly relevant results.
 
 SETUP AND INSTALLATION
-Clone the Repository: Run git clone https://github.com/your-username/flixora.git in your terminal and navigate into the project root directory.
+Clone the Repository: Run git clone https://github.com/anishariyaz-dev/Movie-Recommendation/tree/main in your terminal and navigate into the project root directory.
 
 Initialize Environment: Create a clean Python virtual environment by executing python -m venv venv and activate it using the appropriate script for your operating system.
 
